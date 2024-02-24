@@ -1,24 +1,24 @@
 ﻿using AutoMapper;
 using HotelListing.API.Core.Contracts;
 using HotelListing.API.Core.Exceptions;
-using HotelListing.API.Core.Models;
 using HotelListing.API.Data;
 using HotelListing.API.Models.Country;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelListing.API.Controllers
 {
     [Route("api/v{version:apiVersion}/countries")]
     [ApiController]
-    [ApiVersion("1.0", Deprecated = true)]
-    public class CountriesController : ControllerBase
+    [ApiVersion("2.0")]
+    public class CountriesV2Controller : ControllerBase
     {
         private readonly ICountriesRepository _countriesRepository;
         private readonly IMapper _mapper;
 
-        public CountriesController(ICountriesRepository countriesRepository, IMapper mapper)
+        public CountriesV2Controller(ICountriesRepository countriesRepository, IMapper mapper)
         {
             //_context = context;
             _mapper = mapper;
@@ -36,20 +36,14 @@ namespace HotelListing.API.Controllers
             return CreatedAtAction("GetCountry", new { id = country.Id }, country);
         }
 
-        [HttpGet("GetAll")]
+        [HttpGet]
+        [EnableQuery]
         public async Task<ActionResult<IEnumerable<GetCountryDto>>> GetCountries()
         {
             //var countries = await _context.Countries.ToListAsync();
             var countries = await _countriesRepository.GetAllAsync<GetCountryDto>();
             //var records = _mapper.Map<List<GetCountryDto>>(countries);
             return Ok(countries);
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<PagedResult<GetCountryDto>>> GetPagedCountries([FromQuery] QueryParameters queryParameters)
-        {
-            var pagedCountriesResult = await _countriesRepository.GetAllSync<GetCountryDto>(queryParameters);
-            return Ok(pagedCountriesResult);
         }
 
         [HttpGet("{id}")]
@@ -129,3 +123,4 @@ namespace HotelListing.API.Controllers
         }
     }
 }
+
