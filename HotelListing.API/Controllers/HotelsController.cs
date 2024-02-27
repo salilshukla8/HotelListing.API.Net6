@@ -44,14 +44,7 @@ namespace HotelListing.API.Controllers
 
             var hotel = await _hotelRepository.GetDetails(id);
 
-            if (hotel == null)
-            {
-                return NotFound();
-            }
-
-            var hotelDto = _mapper.Map<GetHotelDto>(hotel);
-
-            return Ok(hotelDto);
+            return Ok(hotel);
         }
 
         // PUT: api/Hotels/5
@@ -64,18 +57,9 @@ namespace HotelListing.API.Controllers
                 return BadRequest("Invalid Record Id");
             }
 
-            var hotel = await _hotelRepository.GetAsync(id);
-
-            if (hotel == null)
-            {
-                return NotFound();
-            }
-
-            _mapper.Map(updateHotelDto, hotel);
-
             try
             {
-                await _hotelRepository.UpdateAsync(hotel);
+                await _hotelRepository.UpdateAsync(id,updateHotelDto);
             }
 
             catch (DbUpdateConcurrencyException)
@@ -99,24 +83,16 @@ namespace HotelListing.API.Controllers
         [HttpPost]
         public async Task<ActionResult<Hotel>> PostHotel(CreateHotelDto createHotelDto)
         {
-            var hotel = _mapper.Map<Hotel>(createHotelDto);
 
-            await _hotelRepository.AddAsync(hotel);
+            var hotel = await _hotelRepository.AddAsync<CreateHotelDto, GetHotelDto>(createHotelDto);
 
-            return CreatedAtAction("GetHotel", new { id = hotel.Id }, hotel);
+            return CreatedAtAction(nameof(GetHotel), new { id = hotel.Id }, hotel);
         }
 
         // DELETE: api/Hotels/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteHotel(int id)
         {
-            var hotel = await _hotelRepository.GetAsync(id);
-
-            if (hotel == null)
-            {
-                return NotFound();
-            }
-
             await _hotelRepository.DeleteAsync(id);
             return NoContent();
         }
